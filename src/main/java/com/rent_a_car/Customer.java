@@ -1,19 +1,19 @@
 package com.rent_a_car;
 
 public class Customer {
-    private String customerId;
+    private int customerId;
     private String customerName;
 
-    public Customer(String customerId, String customerName) {
+    public Customer(int customerId, String customerName) {
         this.customerId = customerId;
         this.customerName = customerName;
     }
 
-    public String getCustomerId() {
+    public int getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(String customerId) {
+    public void setCustomerId(int customerId) {
         this.customerId = customerId;
     }
 

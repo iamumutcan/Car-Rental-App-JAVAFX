@@ -4,10 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.net.URL;
@@ -16,7 +13,9 @@ import java.util.ResourceBundle;
 
 public class rentacarController implements Initializable {
     @FXML
-    private TextField txtCarId,txtCarBrand,txtCarModel,txtCarPrice,txtCarGear;
+    private TextField txtCarId,txtCarPlate,txtCarBrand,txtCarModel,txtCarPrice;
+    @FXML
+    private ComboBox cmbCarFuelType,cmbCarGear;
     @FXML
     private TableView<Car> tableCars;
     @FXML
@@ -25,6 +24,12 @@ public class rentacarController implements Initializable {
     private TableColumn<Car, String> colCarBrand;
     @FXML
     private TableColumn<Car, String> colCarModel;
+    @FXML
+    private TableView<Customer> tableCustomer;
+    @FXML
+    private TableColumn<Customer, String> colCustomerId;
+    @FXML
+    private TableColumn<Customer, String> colCustomerName;
     @FXML
     private ObservableList<Car> carsList= FXCollections.observableArrayList(); // Araba listesi
     @FXML
@@ -38,13 +43,21 @@ public class rentacarController implements Initializable {
         tableCars.setItems(carsList);
         tableCars.refresh();
     }
+    public void  getCustomerToTable(){ // Arabalar listesindeki arabaları tabloya ekler
+        colCustomerId.setCellValueFactory(new PropertyValueFactory<Customer,String>("customerId"));
+        colCustomerName.setCellValueFactory(new PropertyValueFactory<Customer, String>("customerName"));
+        tableCustomer.setItems(customerList);
+        tableCustomer.refresh();
+    }
 
     public void initialize(URL url, ResourceBundle resourceBundle) {
         carBuilder();
-        getCarToTable();
+
         customerBuilder();
         orderBuilder();
-        // carsList.get(4).getCarModel())
+        Dbcon dbcon = new Dbcon();
+        carsList=(ObservableList<Car>) dbcon.carGetDb();   getCarToTable();
+       // carsList.get(4).getCarModel()
         tableCars.getSelectionModel().selectedItemProperty().addListener((observable,oldValue,newValue) -> carTableToTextField(newValue));
         System.out.println("Sipariş"+orderList.get(0).getOrderDetail());
 
@@ -52,24 +65,21 @@ public class rentacarController implements Initializable {
 
     // +++ ilk açılışta  oluşacak veriler  +++
     public void carBuilder(){ // araba nesnesi oluşturup arabalar listesine ekler
-        carsList.add(new Car(001,"Ford","Focus", "Otomatik",350));
-        carsList.add(new Car(002,"Ford","Fiesta", "Otomatik",200));
-        carsList.add(new Car(003,"Ford","Mustang","Otomatik", 500));
-        carsList.add(new Car(004,"Toyota","Corolla","Otomatik",325));
-        carsList.add(new Car(005,"Tofaş","Serçe", "Manuel",75));
-        carsList.add(new Car(006,"Tofaş","Şahin", "Manuel",80));
+        carsList.add(new Car(001,"Ford","Focus", "Otomatik",500,"01UCY06","Benzin"));
+        carsList.add(new Car(002,"Ford","Fiesta", "Otomatik",500,"01UCY06","Benzin"));
+
     }
     public void customerBuilder(){ // müşteri nesnesi oluşturup müşteriler listesine ekler
-        customerList.add(new Customer("005","Umut"));
-        customerList.add(new Customer("006","Ali"));
-        customerList.add(new Customer("007","Mustafa"));
+        customerList.add(new Customer(005,"Umut"));
+        customerList.add(new Customer(006,"Ali"));
+        customerList.add(new Customer(007,"Mustafa"));
     }
     public void orderBuilder(){ // sipariş nesnesi oluşturup siparişler listesine ekler
         orderList.add(new Order(05,800,
                 LocalDate.of(2022,12,10),
                 LocalDate.of(2022,12,13),
-                customerList.get(1),
-                carsList.get(4)
+                customerList.get(0),
+                carsList.get(0)
         ));
     }
     // --- ilk açılışta  oluşacak veriler  ---
@@ -80,13 +90,20 @@ public class rentacarController implements Initializable {
         txtCarId.setText("");
         txtCarBrand.setText("");
         txtCarModel.setText("");
-        txtCarGear.setText("");
         txtCarPrice.setText("");
 
     }
     public void carAdd(){
         carsList.add(new Car(
-          Integer.parseInt( txtCarId.getText()),txtCarBrand.getText(),txtCarModel.getText(),txtCarGear.getText(),Integer.parseInt(txtCarPrice.getText())
+          Integer.parseInt( txtCarId.getText()),
+                txtCarBrand.getText(),
+                txtCarModel.getText(),
+                (String) cmbCarGear.getValue(),
+                Integer.parseInt(txtCarPrice.getText()),
+                txtCarPlate.getText(),
+                (String) cmbCarFuelType.getValue()
+
+
         ));
         getCarToTable();
     }
@@ -97,7 +114,7 @@ public class rentacarController implements Initializable {
                 carsList.get(selectCar).setCarId(Integer.parseInt( txtCarId.getText()));
                 carsList.get(selectCar).setCarBrand(txtCarBrand.getText());
                 carsList.get(selectCar).setCarModel(txtCarModel.getText());
-                carsList.get(selectCar).setCarGear(txtCarGear.getText());
+                carsList.get(selectCar).setCarGear(String.valueOf(cmbCarGear.getValue()));
                 carsList.get(selectCar).setCarPrice(Integer.parseInt( txtCarPrice.getText()));
                 getCarToTable();
             }
@@ -133,9 +150,10 @@ public class rentacarController implements Initializable {
             txtCarId.setText(Integer.toString(xcar.getCarId()) );
             txtCarBrand.setText(xcar.getCarBrand());
             txtCarModel.setText(xcar.getCarModel());
-            txtCarGear.setText(xcar.getCarGear());
             txtCarPrice.setText(Integer.toString(xcar.getCarPrice()) );
-
+            txtCarPlate.setText(xcar.getCarPlate());
+            cmbCarGear.setValue(xcar.getCarGear());
+            cmbCarFuelType.setValue(xcar.getCarFuelType());
 
         }
     }

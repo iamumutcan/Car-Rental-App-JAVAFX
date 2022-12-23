@@ -5,15 +5,18 @@ public class Car {
     private String carBrand;
     private String carModel;
     private String carGear;
-    private int carAvailable;
     private int carPrice;
+    private String carPlate;
+    private String carFuelType;
 
-    public Car(int carId, String carBrand, String carModel,String carGear, int carPrice) {
+    public Car(int carId, String carBrand, String carModel, String carGear, int carPrice, String carPlate, String carFuelType) {
         this.carId = carId;
         this.carBrand = carBrand;
         this.carModel = carModel;
-        this.carGear=carGear;
+        this.carGear = carGear;
         this.carPrice = carPrice;
+        this.carPlate = carPlate;
+        this.carFuelType = carFuelType;
     }
 
     public int getCarId() {
@@ -40,12 +43,12 @@ public class Car {
         this.carModel = carModel;
     }
 
-    public int getCarAvailable() {
-        return carAvailable;
+    public String getCarGear() {
+        return carGear;
     }
 
-    public void setCarAvailable(int carAvailable) {
-        this.carAvailable = carAvailable;
+    public void setCarGear(String carGear) {
+        this.carGear = carGear;
     }
 
     public int getCarPrice() {
@@ -56,11 +59,19 @@ public class Car {
         this.carPrice = carPrice;
     }
 
-    public String getCarGear() {
-        return carGear;
+    public String getCarPlate() {
+        return carPlate;
     }
 
-    public void setCarGear(String carGear) {
-        this.carGear = carGear;
+    public void setCarPlate(String carPlate) {
+        this.carPlate = carPlate;
+    }
+
+    public String getCarFuelType() {
+        return carFuelType;
+    }
+
+    public void setCarFuelType(String carFuelType) {
+        this.carFuelType = carFuelType;
     }
 }
