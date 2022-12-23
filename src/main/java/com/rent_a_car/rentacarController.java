@@ -13,7 +13,7 @@ import java.util.ResourceBundle;
 
 public class rentacarController implements Initializable {
     @FXML
-    private TextField txtCarId,txtCarPlate,txtCarBrand,txtCarModel,txtCarPrice;
+    private TextField txtCarId,txtCarPlate,txtCarBrand,txtCarModel,txtCarPrice,txtCustomerId,txtCustomerName,txtCustomerLastname,txtCustomerPhone,txtCustomerMaill,txtCustomerBalance,txtCustomerTc;
     @FXML
     private ComboBox cmbCarFuelType,cmbCarGear;
     @FXML
@@ -36,6 +36,7 @@ public class rentacarController implements Initializable {
     private ObservableList<Customer>  customerList= FXCollections.observableArrayList(); // Müşteri listesi
     @FXML
     private ObservableList<Order> orderList= FXCollections.observableArrayList(); // Sipariş listesi
+    Dbcon dbcon = new Dbcon();
     public void  getCarToTable(){ // Arabalar listesindeki arabaları tabloya ekler
         colCarId.setCellValueFactory(new PropertyValueFactory<Car,String>("carId"));
         colCarBrand.setCellValueFactory(new PropertyValueFactory<Car, String>("carBrand"));
@@ -44,36 +45,29 @@ public class rentacarController implements Initializable {
         tableCars.refresh();
     }
     public void  getCustomerToTable(){ // Arabalar listesindeki arabaları tabloya ekler
-        colCustomerId.setCellValueFactory(new PropertyValueFactory<Customer,String>("customerId"));
+        colCustomerId.setCellValueFactory(new PropertyValueFactory<Customer,String>("customerTc"));
         colCustomerName.setCellValueFactory(new PropertyValueFactory<Customer, String>("customerName"));
         tableCustomer.setItems(customerList);
         tableCustomer.refresh();
     }
 
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        carBuilder();
+      //  carBuilder();
 
-        customerBuilder();
-        orderBuilder();
-        Dbcon dbcon = new Dbcon();
-        carsList=(ObservableList<Car>) dbcon.carGetDb();   getCarToTable();
+        carsList=(ObservableList<Car>) dbcon.getDbCar();getCarToTable();
+        customerList=(ObservableList<Customer>) dbcon.getDbCustomer(); getCustomerToTable();
+        //orderBuilder();
+
        // carsList.get(4).getCarModel()
         tableCars.getSelectionModel().selectedItemProperty().addListener((observable,oldValue,newValue) -> carTableToTextField(newValue));
-        System.out.println("Sipariş"+orderList.get(0).getOrderDetail());
+        tableCustomer.getSelectionModel().selectedItemProperty().addListener((observable,oldValue,newValue) -> carTableToTextField(newValue));
+
+        //  System.out.println("Sipariş"+orderList.get(0).getOrderDetail());
 
     }
 
-    // +++ ilk açılışta  oluşacak veriler  +++
-    public void carBuilder(){ // araba nesnesi oluşturup arabalar listesine ekler
-        carsList.add(new Car(001,"Ford","Focus", "Otomatik",500,"01UCY06","Benzin"));
-        carsList.add(new Car(002,"Ford","Fiesta", "Otomatik",500,"01UCY06","Benzin"));
 
-    }
-    public void customerBuilder(){ // müşteri nesnesi oluşturup müşteriler listesine ekler
-        customerList.add(new Customer(005,"Umut"));
-        customerList.add(new Customer(006,"Ali"));
-        customerList.add(new Customer(007,"Mustafa"));
-    }
+
     public void orderBuilder(){ // sipariş nesnesi oluşturup siparişler listesine ekler
         orderList.add(new Order(05,800,
                 LocalDate.of(2022,12,10),
@@ -158,8 +152,19 @@ public class rentacarController implements Initializable {
         }
     }
 
-
-
     // Araba işlemleri bitiş
+    // Müşteri işlemleri
+    public void carTableToTextField(Customer xcustomer){
+        if(xcustomer!=null){
+            txtCustomerId.setText(Integer.toString(xcustomer.getCustomerId()));
+            txtCustomerName.setText(xcustomer.getCustomerName());
+            txtCustomerLastname.setText(xcustomer.getCustomerLastname());
+            txtCustomerPhone.setText(xcustomer.getCustomerPhone());
+            txtCustomerMaill.setText(xcustomer.getCustomerMail());
+            txtCustomerBalance.setText(Integer.toString(xcustomer.getCustomerBalance()));
+            txtCustomerTc.setText(xcustomer.getCustomerTc());
+
+        }
+    }
 
 }

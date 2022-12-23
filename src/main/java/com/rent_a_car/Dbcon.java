@@ -17,7 +17,7 @@ public class Dbcon {
     private static final String DATABASE_USERNAME = "root";
     private static final String DATABASE_PASSWORD = "root1234";
     private static final String INSERT_QUERY = "INSERT INTO registration (full_name, email_id, password) VALUES (?, ?, ?)";
-    private static final String SELECTQUERY = "SELECT id, full_name, email_id, password FROM Registration";
+    private static final String SELECTQUERY = "SELECT customerid,customerName,customerLastname,customerPhone,customerMail,customerBalance,customerTc FROM customerTable";
     private static final String SELECTCARQ = "SELECT carid, carBrand, carModel, carGear, carPrice, carPlate, carFuelType FROM cartable";
     private ObservableList<Customer> customerList= FXCollections.observableArrayList(); // Müşteri listesi
     private ObservableList<Car> carList= FXCollections.observableArrayList(); // Müşteri listesi
@@ -60,33 +60,24 @@ public class Dbcon {
             }
         }
     }
-    public List<Customer> vericek(){
+    public List<Customer> getDbCustomer(){
         // Open a connection
         try(Connection connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(SELECTQUERY);) {
             while(rs.next()){
-                //Display values
-                System.out.print("ID: " + rs.getInt("id"));
-                System.out.print(", Age: " + rs.getString("full_name"));
-                System.out.print(", First: " + rs.getString("email_id"));
-                System.out.println(", Last: " + rs.getString("password"));
-                customerList.add(new Customer(rs.getInt("id"),rs.getString("full_name") ));
+
+
+                customerList.add(new Customer(rs.getInt("customerid"),rs.getString("customerName"),rs.getString("customerLastname"),rs.getString("customerPhone"),rs.getString("customerMail"),rs.getInt("customerBalance"),rs.getString("customerTc") ));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return customerList;
     }
-    public List<Car> carGetDb(){
+    public List<Car> getDbCar(){
         // Open a connection
         try(Connection connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(SELECTCARQ);) {
             while(rs.next()){
-                //Display values
-             /*   System.out.print("ID: " + rs.getInt("id"));
-                System.out.print(", Age: " + rs.getString("full_name"));
-                System.out.print(", First: " + rs.getString("email_id"));
-                System.out.println(", Last: " + rs.getString("password"));
-                (int carId, String carBrand, String carModel, String carGear, int carPrice, String carPlate, String carFuelType)
-                */
+
                 carList.add(new Car(rs.getInt("carid"),rs.getString("carBrand"),rs.getString("carModel"),rs.getString("carGear"),rs.getInt("carPrice"),rs.getString("carPlate"),rs.getString("carFuelType")
 
                 ));
