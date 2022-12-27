@@ -8,6 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.net.URL;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
 
@@ -37,36 +38,23 @@ public class rentacarController implements Initializable {
     @FXML
     private ObservableList<Order> orderList= FXCollections.observableArrayList(); // Sipariş listesi
     Dbcon dbcon = new Dbcon();
-    public void  getCarToTable(){ // Arabalar listesindeki arabaları tabloya ekler
-        colCarId.setCellValueFactory(new PropertyValueFactory<Car,String>("carId"));
-        colCarBrand.setCellValueFactory(new PropertyValueFactory<Car, String>("carBrand"));
-        colCarModel.setCellValueFactory(new PropertyValueFactory<Car, String>("carModel"));
-        tableCars.setItems(carsList);
-        tableCars.refresh();
-    }
-    public void  getCustomerToTable(){ // Arabalar listesindeki arabaları tabloya ekler
-        colCustomerId.setCellValueFactory(new PropertyValueFactory<Customer,String>("customerTc"));
-        colCustomerName.setCellValueFactory(new PropertyValueFactory<Customer, String>("customerName"));
-        tableCustomer.setItems(customerList);
-        tableCustomer.refresh();
-    }
+
+
 
     public void initialize(URL url, ResourceBundle resourceBundle) {
       //  carBuilder();
 
-        carsList=(ObservableList<Car>) dbcon.getDbCar();getCarToTable();
-        customerList=(ObservableList<Customer>) dbcon.getDbCustomer(); getCustomerToTable();
+       getCarToTable();
+         getCustomerToTable();
         //orderBuilder();
 
        // carsList.get(4).getCarModel()
         tableCars.getSelectionModel().selectedItemProperty().addListener((observable,oldValue,newValue) -> carTableToTextField(newValue));
-        tableCustomer.getSelectionModel().selectedItemProperty().addListener((observable,oldValue,newValue) -> carTableToTextField(newValue));
+        tableCustomer.getSelectionModel().selectedItemProperty().addListener((observable,oldValue,newValue) -> customerTableToTextField(newValue));
 
         //  System.out.println("Sipariş"+orderList.get(0).getOrderDetail());
 
     }
-
-
 
     public void orderBuilder(){ // sipariş nesnesi oluşturup siparişler listesine ekler
         orderList.add(new Order(05,800,
@@ -76,9 +64,17 @@ public class rentacarController implements Initializable {
                 carsList.get(0)
         ));
     }
-    // --- ilk açılışta  oluşacak veriler  ---
 
-    // Araba işlemleri başlangıç
+    // Araba işlemleri başlangıç --------------------------------------------------------------------
+
+    public void  getCarToTable(){ // Arabalar listesindeki arabaları tabloya ekler
+        carsList=(ObservableList<Car>)dbcon.getDbCar();
+        colCarId.setCellValueFactory(new PropertyValueFactory<Car,String>("carId"));
+        colCarBrand.setCellValueFactory(new PropertyValueFactory<Car, String>("carBrand"));
+        colCarModel.setCellValueFactory(new PropertyValueFactory<Car, String>("carModel"));
+        tableCars.setItems(carsList);
+        tableCars.refresh();
+    }
 
     public void  carFormClear(){
         txtCarId.setText("");
@@ -87,31 +83,35 @@ public class rentacarController implements Initializable {
         txtCarPrice.setText("");
 
     }
-    public void carAdd(){
-        carsList.add(new Car(
-          Integer.parseInt( txtCarId.getText()),
-                txtCarBrand.getText(),
-                txtCarModel.getText(),
-                (String) cmbCarGear.getValue(),
-                Integer.parseInt(txtCarPrice.getText()),
-                txtCarPlate.getText(),
-                (String) cmbCarFuelType.getValue()
+    public void carAdd() throws SQLException {
+        try {
+            dbcon.instertCarDb(
+                    txtCarBrand.getText(),
+                    txtCarModel.getText(),
+                    (String) cmbCarGear.getValue(),
+                    Integer.parseInt(txtCarPrice.getText()),
+                    txtCarPlate.getText(),
+                    (String) cmbCarFuelType.getValue()
+            );
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException(e);
+        }
 
-
-        ));
         getCarToTable();
     }
     public void  carUpdate(){
         try{
-            int selectCar=tableCars.getSelectionModel().getSelectedIndex();
-            if(selectCar!=-1){
-                carsList.get(selectCar).setCarId(Integer.parseInt( txtCarId.getText()));
-                carsList.get(selectCar).setCarBrand(txtCarBrand.getText());
-                carsList.get(selectCar).setCarModel(txtCarModel.getText());
-                carsList.get(selectCar).setCarGear(String.valueOf(cmbCarGear.getValue()));
-                carsList.get(selectCar).setCarPrice(Integer.parseInt( txtCarPrice.getText()));
-                getCarToTable();
-            }
+            dbcon.updataCarDb(
+                    txtCarBrand.getText(),
+                    txtCarModel.getText(),
+                    (String) cmbCarGear.getValue(),
+                    Integer.parseInt(txtCarPrice.getText()),
+                    txtCarPlate.getText(),
+                    (String) cmbCarFuelType.getValue(),
+                    Integer.parseInt(txtCarId.getText())
+            );
         }
         catch (NumberFormatException hata ){
             Alert uyari= new Alert(Alert.AlertType.ERROR);
@@ -119,16 +119,14 @@ public class rentacarController implements Initializable {
             uyari.setHeaderText("Lütfen daha sonra tekrar deneyiniz");
             uyari.setContentText(hata.toString());
             uyari.showAndWait();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-
+        getCarToTable();
     }
     public void  carDelete(){
         try{
-            int selectCar=tableCars.getSelectionModel().getSelectedIndex();
-            if(selectCar!=-1){
-                carsList.remove(selectCar);
-                getCarToTable();
-            }
+            dbcon.deleteCarDb(Integer.parseInt(txtCarId.getText()));
         }
         catch (NumberFormatException hata ){
             Alert uyari= new Alert(Alert.AlertType.ERROR);
@@ -136,7 +134,10 @@ public class rentacarController implements Initializable {
             uyari.setHeaderText("Lütfen daha sonra tekrar deneyiniz");
             uyari.setContentText(hata.toString());
             uyari.showAndWait();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
+        getCarToTable();
 
     }
     public void carTableToTextField(Car xcar){
@@ -151,10 +152,7 @@ public class rentacarController implements Initializable {
 
         }
     }
-
-    // Araba işlemleri bitiş
-    // Müşteri işlemleri
-    public void carTableToTextField(Customer xcustomer){
+    public void customerTableToTextField(Customer xcustomer){
         if(xcustomer!=null){
             txtCustomerId.setText(Integer.toString(xcustomer.getCustomerId()));
             txtCustomerName.setText(xcustomer.getCustomerName());
@@ -166,5 +164,84 @@ public class rentacarController implements Initializable {
 
         }
     }
+    // Araba işlemleri bitiş  --------------------------------------------------------------------
+    // Müşteri işlemleri  --------------------------------------------------------------------
 
+    public void  getCustomerToTable(){ // Müşteriler listesindeki arabaları tabloya ekler
+        customerList=(ObservableList<Customer>)dbcon.getDbCustomer();
+        colCustomerId.setCellValueFactory(new PropertyValueFactory<Customer,String>("customerTc"));
+        colCustomerName.setCellValueFactory(new PropertyValueFactory<Customer, String>("customerName"));
+        tableCustomer.setItems(customerList);
+        tableCustomer.refresh();
+    }
+
+//    public (String customerName, String customerLastname, String customerMail, String customerPhone, int customerBalance, String customerTc,int customerid) throws SQLException {
+    public void  customerUpdate(){
+        try{
+            
+            dbcon.UpdateCustomerDb(
+                    txtCustomerName.getText(),
+                    txtCustomerLastname.getText(),
+                    txtCustomerMaill.getText(),
+                    txtCustomerPhone.getText(),
+                    Integer.parseInt( txtCustomerBalance.getText()),
+                    txtCustomerTc.getText(),
+                    Integer.parseInt( txtCustomerId.getText())
+
+            );
+
+        }
+        catch (NumberFormatException hata ){
+            Alert uyari= new Alert(Alert.AlertType.ERROR);
+            uyari.setTitle("Hata");
+            uyari.setHeaderText("Lütfen daha sonra tekrar deneyiniz");
+            uyari.setContentText(hata.toString());
+            uyari.showAndWait();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        getCustomerToTable();
+    }
+    public void  customerAdd(){
+        try{
+
+            dbcon.insertCustomerDb(
+                    txtCustomerName.getText(),
+                    txtCustomerLastname.getText(),
+                    txtCustomerMaill.getText(),
+                    txtCustomerPhone.getText(),
+                    Integer.parseInt( txtCustomerBalance.getText()),
+                    txtCustomerTc.getText()
+            );
+
+        }
+        catch (NumberFormatException hata ){
+            Alert uyari= new Alert(Alert.AlertType.ERROR);
+            uyari.setTitle("Hata");
+            uyari.setHeaderText("Lütfen daha sonra tekrar deneyiniz");
+            uyari.setContentText(hata.toString());
+            uyari.showAndWait();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        getCustomerToTable();
+    }
+    public void  customerDelete(){
+        try{
+            dbcon.deleteCustomerDb(
+                    Integer.parseInt( txtCustomerId.getText())
+
+            );
+        }
+        catch (NumberFormatException hata ){
+            Alert uyari= new Alert(Alert.AlertType.ERROR);
+            uyari.setTitle("Hata");
+            uyari.setHeaderText("Lütfen daha sonra tekrar deneyiniz");
+            uyari.setContentText(hata.toString());
+            uyari.showAndWait();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        getCustomerToTable();
+    }
 }

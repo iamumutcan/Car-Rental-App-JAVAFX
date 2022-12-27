@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.collections.*?>
 <?import java.lang.*?>
+<?import javafx.collections.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.collections.FXCollections?>
 
 <AnchorPane prefHeight="504.0" prefWidth="738.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.rent_a_car.rentacarController">
    <children>
@@ -141,17 +140,17 @@
                         <HBox alignment="CENTER" layoutX="297.0" layoutY="290.0" prefHeight="100.0" prefWidth="427.0">
                            <children>
                               <Button mnemonicParsing="false" text="Formu Temizle" />
-                              <Button mnemonicParsing="false" text="Ekle">
+                              <Button mnemonicParsing="false" onAction="#customerAdd" text="Ekle">
                                  <HBox.margin>
                                     <Insets left="20.0" />
                                  </HBox.margin>
                               </Button>
-                              <Button mnemonicParsing="false" text="Güncelle">
+                              <Button mnemonicParsing="false" onAction="#customerDelete" text="Güncelle">
                                  <HBox.margin>
                                     <Insets left="20.0" />
                                  </HBox.margin>
                               </Button>
-                              <Button mnemonicParsing="false" text="Sil">
+                              <Button mnemonicParsing="false" onAction="#customerDelete" text="Sil">
                                  <HBox.margin>
                                     <Insets left="20.0" />
                                  </HBox.margin>
