@@ -24,9 +24,30 @@ public class Dbcon {
      private static final String INSERTCUSTOMERQ="INSERT INTO customertable (customerName, customerLastname, customerPhone,customerMail,customerBalance,customerTc) VALUES (?, ? ,? ,? , ? , ?)";
     private static final String UPDATECUSTOMERQ = "UPDATE customertable SET customerName=?,customerLastname=?,customerPhone=?,customerMail=?,customerBalance=?,customerTc=? WHERE customerid=? ";
     private static final String DELETECUSTOMERQ="DELETE FROM customertable WHERE customerid=? ";
+    private static final String SELECTORDERQ = "SELECT  orderid,orderCustomerid,orderCarrid,orderRentalStart,orderRentalEnd,orderTotalPrice FROM ordertable";
+    private static final String INSERTORDERQ="INSERT INTO ordertable (orderCustomerid,orderCarrid,orderRentalStart,orderRentalEnd,orderTotalPrice) VALUES (?, ? ,? ,? , ? )";
+    private static final String UPDATEORDERQ = "UPDATE ordertable SET orderCustomerid=?,orderCarrid=?,orderRentalStart=?,orderRentalEnd=?,orderTotalPrice=? WHERE orderid=? ";
+    private static final String DELETEORDERQ="DELETE FROM ordertable WHERE orderid=? ";
+
     private ObservableList<Customer> customerList= FXCollections.observableArrayList(); // Müşteri listesi
     private ObservableList<Car> carList= FXCollections.observableArrayList(); // Müşteri listesi
+    private ObservableList<Order> orderList= FXCollections.observableArrayList(); // Müşteri listesi
 
+    public static void printSQLException(SQLException ex) {
+        for (Throwable e: ex) {
+            if (e instanceof SQLException) {
+                e.printStackTrace(System.err);
+                System.err.println("SQLState: " + ((SQLException) e).getSQLState());
+                System.err.println("Error Code: " + ((SQLException) e).getErrorCode());
+                System.err.println("Message: " + e.getMessage());
+                Throwable t = ex.getCause();
+                while (t != null) {
+                    System.out.println("Cause: " + t);
+                    t = t.getCause();
+                }
+            }
+        }
+    }
     public void instertCarDb(String carBrand, String carModel, String carGear, int carPrice, String carPlate, String carFuelType) throws SQLException {
         // Step 1: Establishing a Connection and
         // try-with-resource statement will auto close the connection.
@@ -86,30 +107,23 @@ public class Dbcon {
             printSQLException(e);
         }
     }
-
-
-    public static void printSQLException(SQLException ex) {
-        for (Throwable e: ex) {
-            if (e instanceof SQLException) {
-                e.printStackTrace(System.err);
-                System.err.println("SQLState: " + ((SQLException) e).getSQLState());
-                System.err.println("Error Code: " + ((SQLException) e).getErrorCode());
-                System.err.println("Message: " + e.getMessage());
-                Throwable t = ex.getCause();
-                while (t != null) {
-                    System.out.println("Cause: " + t);
-                    t = t.getCause();
-                }
+    public List<Car> getDbCar(){
+        // Open a connection
+        carList.clear();
+        try(Connection connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(SELECTCARQ);) {
+            while(rs.next()){
+                carList.add(new Car(rs.getInt("carid"),rs.getString("carBrand"),rs.getString("carModel"),rs.getString("carGear"),rs.getInt("carPrice"),rs.getString("carPlate"),rs.getString("carFuelType") ));
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return carList;
     }
     public List<Customer> getDbCustomer(){
         // Open a connection
         customerList.clear();;
         try(Connection connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(SELECTQUERY);) {
             while(rs.next()){
-
-
                 customerList.add(new Customer(rs.getInt("customerid"),rs.getString("customerName"),rs.getString("customerLastname"),rs.getString("customerPhone"),rs.getString("customerMail"),rs.getInt("customerBalance"),rs.getString("customerTc") ));
             }
         } catch (SQLException e) {
@@ -117,21 +131,7 @@ public class Dbcon {
         }
         return customerList;
     }
-    public List<Car> getDbCar(){
-        // Open a connection
-        carList.clear();
-        try(Connection connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(SELECTCARQ);) {
-            while(rs.next()){
 
-                carList.add(new Car(rs.getInt("carid"),rs.getString("carBrand"),rs.getString("carModel"),rs.getString("carGear"),rs.getInt("carPrice"),rs.getString("carPlate"),rs.getString("carFuelType")
-
-                ));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return carList;
-    }
     public void insertCustomerDb(String customerName, String customerLastname, String customerPhone, String customerMail, int customerBalance, String customerTc)throws SQLException {
         // Step 1: Establishing a Connection and
         // try-with-resource statement will auto close the connection.
@@ -186,6 +186,79 @@ public class Dbcon {
             System.out.println(preparedStatement);
             // Step 3: Execute the query or update query
             preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            // print SQL exception information
+            printSQLException(e);
+        }
+    }
+
+    //    private static final String SELECTORDERQ = "SELECT  orderid,orderCustomerid,orderCarrid,orderRentalStart,orderRentalEnd,orderTotalPrice FROM ordertable";
+    public List<Order> getDbOrder(){
+        // Open a connection
+        orderList.clear();;
+        try(Connection connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(SELECTORDERQ);) {
+            while(rs.next()){
+                orderList.add(new Order(rs.getInt("orderid"),rs.getInt("orderCustomerid"),rs.getInt("orderCarrid"),rs.getDate("orderRentalStart").toLocalDate(),rs.getDate("orderRentalEnd").toLocalDate(),rs.getInt("orderTotalPrice") ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return orderList;
+    }
+    public void insertOrderDb(String orderCustomerid, String orderCarrid, Date orderRentalStart, Date orderRentalEnd, int orderTotalPrice) throws SQLException {
+        // Step 1: Establishing a Connection and
+        // try-with-resource statement will auto close the connection.
+        try (Connection connection = DriverManager
+                .getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD);
+             // Step 2:Create a statement using connection object
+            PreparedStatement preparedStatement = connection.prepareStatement(INSERTORDERQ)) {
+            preparedStatement.setString(1, orderCustomerid);
+            preparedStatement.setString(2, orderCarrid);
+            preparedStatement.setDate(3, orderRentalStart );
+            preparedStatement.setDate(4, orderRentalEnd);
+            preparedStatement.setInt(5, orderTotalPrice);
+            System.out.println(preparedStatement);
+            // Step 3: Execute the query or update query
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            // print SQL exception information
+            printSQLException(e);
+        }
+    }
+    public void updateOrderDb(int orderCustomerid, int orderCarrid, Date orderRentalStart, Date orderRentalEnd, int orderTotalPrice,int orderid) throws SQLException {
+        // Step 1: Establishing a Connection and
+        // try-with-resource statement will auto close the connection.
+        try (Connection connection = DriverManager
+                .getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD);
+             // Step 2:Create a statement using connection object
+             PreparedStatement preparedStatement = connection.prepareStatement(UPDATEORDERQ)) {
+            preparedStatement.setInt(1, orderCustomerid);
+            preparedStatement.setInt(2, orderCarrid);
+            preparedStatement.setDate(3, orderRentalStart );
+            preparedStatement.setDate(4, orderRentalEnd);
+            preparedStatement.setInt(5, orderTotalPrice);
+            preparedStatement.setInt(6, orderid);
+            System.out.println(preparedStatement);
+            // Step 3: Execute the query or update query
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            // print SQL exception information
+            printSQLException(e);
+        }
+    }
+    public void deleteOrderDb(int orderid) throws SQLException {
+
+        // Step 1: Establishing a Connection and
+        // try-with-resource statement will auto close the connection.
+        try (Connection connection = DriverManager
+                .getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD);
+             // Step 2:Create a statement using connection object
+             PreparedStatement preparedStatement = connection.prepareStatement(DELETEORDERQ)) {
+            preparedStatement.setInt(1, orderid);
+            System.out.println(preparedStatement);
+            // Step 3: Execute the query or update query
+            preparedStatement.executeUpdate();
+
         } catch (SQLException e) {
             // print SQL exception information
             printSQLException(e);

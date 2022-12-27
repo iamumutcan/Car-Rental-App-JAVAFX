@@ -1,17 +1,17 @@
 package com.rent_a_car;
 
 import java.time.LocalDate;
+import java.util.Date;
 
 public class Order {
     private int orderId;
     private int orderTotalPrice;
     private LocalDate rentalStart;
     private LocalDate rentalEnd;
-    private Customer orderCustomer;
-    private Car orderCar;
-    private String orderDetail;
+    private int orderCustomer;
+    private int orderCar;
 
-    public Order(int orderId, int orderTotalPrice, LocalDate rentalStart, LocalDate rentalEnd, Customer orderCustomer, Car orderCar) {
+    public Order(int orderId, int orderCustomer, int orderCar, LocalDate rentalStart, LocalDate rentalEnd,  int orderTotalPrice) {
         this.orderId = orderId;
         this.orderTotalPrice = orderTotalPrice;
         this.rentalStart = rentalStart;
@@ -19,6 +19,7 @@ public class Order {
         this.orderCustomer = orderCustomer;
         this.orderCar = orderCar;
     }
+
 
     public int getOrderId() {
         return orderId;
@@ -52,28 +53,19 @@ public class Order {
         this.rentalEnd = rentalEnd;
     }
 
-    public Customer getOrderCustomer() {
+    public int getOrderCustomer() {
         return orderCustomer;
     }
 
-    public void setOrderCustomer(Customer orderCustomer) {
+    public void setOrderCustomer(int orderCustomer) {
         this.orderCustomer = orderCustomer;
     }
 
-    public Car getOrderCar() {
+    public int getOrderCar() {
         return orderCar;
     }
 
-    public void setOrderCar(Car orderCar) {
+    public void setOrderCar(int orderCar) {
         this.orderCar = orderCar;
-    }
-
-    public String getOrderDetail() {
-        this.orderDetail="Araba Modeli: "+orderCar.getCarModel()+"Müşteri: "+orderCustomer.getCustomerName();
-        return orderDetail;
-    }
-
-    public void setOrderDetail(String orderDetail) {
-        this.orderDetail = orderDetail;
     }
 }
